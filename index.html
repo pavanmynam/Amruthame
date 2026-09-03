@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amruthame - Hyderabad Delivery</title>
+<link rel="manifest" href="manifest.json">
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui;background:#fdf6f3}
+.hd{background:#ff5722;color:#fff;padding:14px;text-align:center;font-weight:bold;position:sticky;top:0;z-index:10}
+.box{max-width:500px;margin:auto;padding:12px}
+.card{background:#fff;border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:0 4px 14px rgba(0,0,0,.07)}
+.btn{width:100%;padding:13px;border:0;border-radius:12px;font-weight:bold;font-size:15px;cursor:pointer}
+.o{background:#ff5722;color:#fff}.b{background:#111;color:#fff}
+select,input{width:100%;padding:11px;border-radius:10px;border:1px solid #ddd;margin:6px 0}
+.item{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed #eee}
+.rider{border:1px solid #ffe0b2;background:#fff8f0;border-radius:12px;padding:10px;margin:6px 0}
+.tab{display:flex;gap:6px}.tab button{flex:1;padding:10px;border-radius:10px;border:1px solid #ddd;background:#fff}
+.tab.on{background:#ff5722;color:#fff;border-color:#ff5722}
+</style>
+</head>
+<body>
+<div class="hd">🚚 Amruthame - Hyderabad Fast Delivery</div>
+<div class="box">
+<div class="tab">
+<button id="tb1" class="on" onclick="show('c')">Customer</button>
+<button id="tb2" onclick="show('s')">Shop</button>
+<button id="tb3" onclick="show('r')">Rider App</button>
+<button id="tb4" onclick="show('a')">Admin</button>
+</div>
+
+<!-- CUSTOMER -->
+<div id="c" class="card">
+<h3>📍 Delivery Location</h3>
+<select id="area" onchange="findRider()">
+<option value="">Area Select Chey</option>
+<option>Banjara Hills</option><option>Jubilee Hills</option><option>HITEC City</option><option>Madhapur</option><option>Gachibowli</option><option>Kondapur</option><option>Manikonda</option><option>Kothaguda</option><option>Kukatpally</option><option>KPHB</option><option>Miyapur</option><option>Ameerpet</option><option>SR Nagar</option><option>Punjagutta</option><option>Begumpet</option><option>Secunderabad</option><option>Tarnaka</option><option>Uppal</option><option>LB Nagar</option><option>Dilsukhnagar</option><option>Kothapet</option><option>Malakpet</option><option>Charminar</option><option>Mehdipatnam</option><option>Tolichowki</option>
+</select>
+<select id="road">
+<option>Main Road / Center</option>
+<option>JNTU Main Road</option><option>KPHB Main Road</option><option>Ameerpet X Roads</option><option>Punjagutta Center</option><option>Banjara Road No.12</option><option>Gachibowli ORR Center</option><option>Uppal X Road</option><option>LB Nagar X Road</option><option>Madhapur Main Road</option><option>HITEC City Main Road</option>
+</select>
+<input id="house" placeholder="House No / Flat No / Landmark">
+
+<h3>🍛 Items Select Chey</h3>
+<div id="items"></div>
+<p><b>Total: ₹<span id="total">0</span></b></p>
+
+<div id="riderAssign" style="display:none" class="rider">
+<b>Nearest Rider Found:</b><br>
+<span id="rName"></span> - <span id="rArea"></span><br>
+<small>📞 <span id="rPhone"></span> | Distance: ~1.2KM</small>
+</div>
+
+<button class="btn o" onclick="pay()">Pay & Place Order</button>
+<p id="cStatus"></p>
+</div>
+
+<!-- SHOP -->
+<div id="s" class="card" style="display:none">
+<h3>🏪 Shop Panel - <span id="sArea">Uppal</span></h3>
+<p>Order: <b id="sOrder">No orders</b></p>
+<p>Total: <b id="sTotal">-</b></p>
+<p>Customer: <b id="sCustLoc">-</b></p>
+<p>Rider: <b id="sRider">-</b></p>
+<button class="btn b" onclick="shopAccept()">Accept - Call Rider</button>
+<button class="btn o" style="margin-top:8px" onclick="shopReady()">Ready - Scan & Pay Rider</button>
+<div id="qr" style="display:none;margin-top:10px;text-align:center">
+<img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=UPI-PAY-AMRUTHAME-300" style="border-radius:8px">
+<p><small>Shop QR - Nuvvu Scan chesi Rider ki Payment Chey</small></p>
+<button class="btn o" onclick="payToRider()">₹300 Paid to Shop (Scanner)</button>
+</div>
+</div>
+
+<!-- RIDER -->
+<div id="r" class="card" style="display:none">
+<h3>🛵 Rider App - <span id="rLogName">Ravi</span></h3>
+<p>New Delivery: <b id="rOrder">No orders</b></p>
+<p>Pick: <b id="rShopLoc">Shop</b> -> Drop: <b id="rDrop">Customer</b></p>
+<p>Payment: <b id="rPayInfo">₹40 Delivery Charge Same Day Vastadi</b></p>
+<button class="btn b" onclick="callShop()">📞 Call Shop (Dummy)</button>
+<button class="btn b" style="margin-top:6px" onclick="callCust()">📞 Call Customer</button>
+<button class="btn o" style="margin-top:8px" onclick="delivered()">✅ Customer Received - Complete Ride</button>
+</div>
+
+<!-- ADMIN -->
+<div id="a" class="card" style="display:none">
+<h3>⚙️ Admin - Riders Add/Remove</h3>
+<div id="rList"></div>
+<input id="newRName" placeholder="New Rider Name"><input id="newRArea" placeholder="Area ex: Kukatpally"><input id="newRPhone" placeholder="Phone"><button class="btn b" onclick="addRider()">Add Rider</button>
+</div>
+
+</div>
+<script>
+let riders=[
+{name:"Ravi - Kukatpally",area:"Kukatpally",phone:"98765 11111"},
+{name:"Suresh - Ameerpet",area:"Ameerpet",phone:"98765 22222"},
+{name:"Imran - Banjara Hills",area:"Banjara Hills",phone:"98765 33333"},
+{name:"Kiran - Uppal",area:"Uppal",phone:"98765 44444",default:true},
+{name:"Arjun - Gachibowli",area:"Gachibowli",phone:"98765 55555"},
+{name:"Naresh - LB Nagar",area:"LB Nagar",phone:"98765 66666"},
+{name:"Saleem - Mehdipatnam",area:"Mehdipatnam",phone:"98765 77777"},
+{name:"Vijay - Secunderabad",area:"Secunderabad",phone:"98765 88888"}
+];
+let menu=[
+{name:"Chicken Biryani",price:300},{name:"Mutton Biryani",price:450},{name:"Veg Biryani",price:220},{name:"Fried Rice",price:180},{name:"Mandi Rice",price:350},{name:"Parotta + Curry",price:150}
+];
+let cart={};let selectedRider=riders[3];
+
+function renderMenu(){
+let h='';menu.forEach((m,i)=>{
+h+=`<div class="item"><span>${m.name} - ₹${m.price}</span><span><button onclick="addItem(${i},-1)">-</button> <b id="q${i}">0</b> <button onclick="addItem(${i},1)">+</button></span></div>`;
+});document.getElementById('items').innerHTML=h;renderRiders();
+}
+function addItem(i,d){
+let q=(cart[i]||0)+d;if(q<0)q=0;cart[i]=q;document.getElementById('q'+i).innerText=q;calc();
+}
+function calc(){
+let tot=0;let txt='';
+for(let i in cart){if(cart[i]>0){tot+=cart[i]*menu[i].price;txt+=`${menu[i].name} x${cart[i]}, `;}}
+document.getElementById('total').innerText=tot;localStorage.setItem('orderTxt',txt);localStorage.setItem('orderTot',tot);
+}
+function findRider(){
+let area=document.getElementById('area').value;
+let f=riders.find(r=>r.area==area)||riders.find(r=>r.default)||riders[0];
+selectedRider=f;
+document.getElementById('riderAssign').style.display='block';
+document.getElementById('rName').innerText=f.name;
+document.getElementById('rArea').innerText=f.area;
+document.getElementById('rPhone').innerText=f.phone;
+document.getElementById('sArea').innerText=area;
+}
+function show(t){
+document.getElementById('c').style.display=t=='c'?'block':'none';
+document.getElementById('s').style.display=t=='s'?'block':'none';
+document.getElementById('r').style.display=t=='r'?'block':'none';
+document.getElementById('a').style.display=t=='a'?'block':'none';
+document.getElementById('tb1').className=t=='c'?'on':'';document.getElementById('tb2').className=t=='s'?'on':'';document.getElementById('tb3').className=t=='r'?'on':'';document.getElementById('tb4').className=t=='a'?'on':'';
+}
+function pay(){
+let tot=localStorage.getItem('orderTot')||0;if(tot==0){alert('Item select chey bro');return;}
+let area=document.getElementById('area').value;if(!area){alert('Area select chey');return;}
+let options={
+key:"rzp_test_1DP5mmOlF5G5ag",amount:tot*100,currency:"INR",name:"Amruthame",description:localStorage.getItem('orderTxt'),
+handler:function(res){
+document.getElementById('cStatus').innerHTML="✅ Paid ₹"+tot+" Success<br>Order ID: "+res.razorpay_payment_id+"<br>Rider "+selectedRider.name+" vastunnadu!";
+document.getElementById('sOrder').innerText=localStorage.getItem('orderTxt');
+document.getElementById('sTotal').innerText="₹"+tot;
+document.getElementById('sCustLoc').innerText=area+" - "+document.getElementById('road').value+" - "+document.getElementById('house').value;
+document.getElementById('sRider').innerText=selectedRider.name+" - "+selectedRider.phone;
+document.getElementById('rOrder').innerText=localStorage.getItem('orderTxt')+" - ₹"+tot;
+document.getElementById('rDrop').innerText=area;
+document.getElementById('rShopLoc').innerText="Shop - "+area;
+localStorage.setItem('riderData',JSON.stringify(selectedRider));
+},
+theme:{color:"#ff5722"}
+};
+new Razorpay(options).open();
+}
+function shopAccept(){alert('Shop Accepted! Rider ki call chestunna: '+selectedRider.phone);document.getElementById('rLogName').innerText=selectedRider.name;}
+function shopReady(){document.getElementById('qr').style.display='block';}
+function payToRider(){alert('✅ Nuvvu Shop ki ₹300 pay chesav (Scanner). Ippudu Rider delivery ki veltadu. Delivery ayyaka Rider ki ₹40 same day vastadi (RazorpayX)');show('r');}
+function callShop(){let r=JSON.parse(localStorage.getItem('riderData')||'{}');alert('Calling Shop... (Dummy Call)\nShop Number: 98765 00000');}
+function callCust(){alert('Calling Customer... (Dummy)');}
+function delivered(){let tot=localStorage.getItem('orderTot');let split=`Delivered! 💰 Split:\nShop ki: ₹${tot*0.8}\nRider ki: ₹40 (Same Day)\nNee Commission: ₹${tot*0.2-40}`;alert(split);localStorage.clear();location.reload();}
+function renderRiders(){let h='';riders.forEach((r,i)=>{h+=`<div class="rider">${r.name} | ${r.area} | ${r.phone} <button onclick="remRider(${i})" style="float:right">Remove</button></div>`});document.getElementById('rList').innerHTML=h;}
+function addRider(){let n=document.getElementById('newRName').value,a=document.getElementById('newRArea').value,p=document.getElementById('newRPhone').value;if(!n)return;riders.push({name:n,area:a,phone:p});renderRiders();alert('Rider Added');}
+function remRider(i){riders.splice(i,1);renderRiders();}
+renderMenu();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
+</script>
+</body>
+</html>
