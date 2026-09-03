@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery App</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#ff5722">
+<style>
+body{font-family:Arial;margin:0;padding:15px;background:#f5f5f5}
+.card{background:#fff;padding:20px;border-radius:12px;margin-bottom:15px;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+.btn{background:#ff5722;color:#fff;border:0;padding:12px 20px;border-radius:8px;width:100%;font-size:16px}
+.role{display:flex;gap:10px;margin:15px 0}
+.role button{flex:1}
+</style>
+</head>
+<body>
+<h2>🚀 My Delivery App</h2>
+<div class="role">
+<button class="btn" onclick="show('customer')">Customer</button>
+<button class="btn" onclick="show('shop')">Shop</button>
+<button class="btn" onclick="show('rider')">Rider</button>
+</div>
+
+<div id="customer" class="card">
+<h3>Customer Order</h3>
+<input id="item" placeholder="Em kavali? Biryani..." style="width:100%;padding:10px;margin:10px 0">
+<button class="btn" onclick="pay()">Pay ₹300 & Order</button>
+<p id="status"></p>
+</div>
+
+<div id="shop" class="card" style="display:none">
+<h3>Shop Owner</h3>
+<p>New Order: <b id="orderItem">-</b></p>
+<button class="btn" onclick="accept()">Accept Order</button>
+</div>
+
+<div id="rider" class="card" style="display:none">
+<h3>Rider App</h3>
+<p>Order: <b id="riderItem">-</b> | To: Customer Location</p>
+<button class="btn" onclick="delivered()">✅ Delivered - Get ₹40</button>
+</div>
+
+<script>
+function show(role){
+document.getElementById('customer').style.display=role=='customer'?'block':'none';
+document.getElementById('shop').style.display=role=='shop'?'block':'none';
+document.getElementById('rider').style.display=role=='rider'?'block':'none';
+}
+function pay(){
+let item=document.getElementById('item').value||'Biryani';
+localStorage.setItem('order',item);
+document.getElementById('status').innerText='✅ Paid ₹300 | Shop ki vellindi. Rider ki assign ayindi!';
+document.getElementById('orderItem').innerText=item;
+document.getElementById('riderItem').innerText=item;
+alert('Payment Success! Money ne daggara safe ga undi. Shop ki delivery tarvata velthundi.');
+}
+function accept(){ alert('Shop accepted! Rider ki vellindi.'); }
+function delivered(){ 
+alert('Delivery Done! ₹240 Shop ki, ₹40 Rider ki, ₹20 neeku. RazorpayX auto pampindi!'); 
+localStorage.clear();
+}
+
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js'); }
+</script>
+</body>
+</html>
